@@ -1,36 +1,46 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <string>
-#include "SecretSanta.h"
 #include <nlohmann/json.hpp>
+#include "EnvReader.h"
+#include "SecretSanta.h"
+#include "EmailSender.h"
 
 int main() {
-    std::cout << "Initializing participants for Secret Santa." << std::endl;
+    try {
+        EnvReader envReader("../.env");
+        auto envVariables = envReader.getEnvVariables();
 
-    std::vector<std::pair<std::string, std::string>> participants = {
-        {"a", "a@a.com"},
-        {"b", "b@b.com"},
-        {"c", "c@c.com"},
-        {"d", "d@d.com"}
-    };
+        std::vector<std::string> participants;
+        std::istringstream ss(envVariables["PARTICIPANTS"]);
+        std::string participant;
+        while (std::getline(ss, participant, ',')) {
+            participants.push_back(participant);
+        }
 
-    if (participants.empty()) {
-        std::cerr << "No participants found. Exiting..." << std::endl;
+        SecretSanta secretSanta(participants);
+        auto assignments = secretSanta.assign();
+
+        EmailSender emailSender(
+            envVariables["SMTP_SERVER"],
+            std::stoi(envVariables["SMTP_PORT"]),
+            envVariables["SMTP_USERNAME"],
+            envVariables["SMTP_PASSWORD"]
+        );
+
+        for (const auto& [giver, receiver] : assignments) {
+            std::string subject = "Your Secret Santa Assignment";
+            std::string body = "Hi " + giver + ",\n\nYou are the Secret Santa for " + receiver + ".\n\nHappy Holidays!";
+            emailSender.sendEmail(envVariables["FROM_EMAIL"], giver, subject, body);
+        }
+
+        nlohmann::json resultJson(assignments);
+        std::ofstream resultFile("results.json");
+        resultFile << resultJson.dump(4);
+        resultFile.close();
+
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
-
-    SecretSanta secretSanta(participants);
-    std::cout << "Shuffling participants..." << std::endl;
-    secretSanta.shuffle();
-
-    std::cout << "Sending emails to participants..." << std::endl;
-    secretSanta.sendEmails();
-
-    std::cout << "Saving results to result.json..." << std::endl;
-    secretSanta.saveResultsToFile("result.json");
-
-    std::cout << "Secret Santa emails have been sent and results saved!" << std::endl;
-
     return 0;
 }
