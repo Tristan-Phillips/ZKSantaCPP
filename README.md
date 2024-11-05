@@ -1,5 +1,7 @@
 # ZKSantaCPP
 
+(DISCLAIMER its not ZK, at least not yet)
+
 This project is a memory-secure, zero-knowledge Secret Santa application written in C++. 
 The program assigns Secret Santa pairs to participants and sends them their assignments via email using SMTP with SSL/TLS authentication. 
 Sensitive information is stored in a `.env` file, and the results are logged in a `results.json` file.
@@ -17,17 +19,20 @@ ZKSantaCPP/
 ├── include/
 │ ├── EnvReader.h
 │ ├── SecretSanta.h
-│ └── EmailSender.h
+│ ├── EmailSender.h
+│ └── ReadCSV.h
 │
 ├── src/
 │ ├── EnvReader.cpp
 │ ├── SecretSanta.cpp
 │ ├── EmailSender.cpp
-│ └── main.cpp
+│ ├── main.cpp
+│ └── ReadCSV.cpp
 │
 ├── utils/
 │ └── test-smtp.sh
 │
+├── participants.csv
 ├── CMakeLists.txt
 ├── .env
 └── results.json
@@ -65,6 +70,18 @@ To configure the Secret Santa program, you need to create a `.env` file in the r
    PARTICIPANTS=alice@example.com,bob@example.com,charlie@example.com
    FROM_EMAIL=from@example.com
    ```
+
+### CSV File
+
+The participants.csv file should be placed in the root directory and must have the following format:
+(No spaces before or after comma / not fixed yet)
+
+    ```plaintext
+    Full Name,Email
+    Alice Johnson,alice@example.com
+    Bob Smith,bob@example.com
+    Charlie Brown,charlie@example.com
+    ```
 
 ## Running the program
 `./SecretSanta`

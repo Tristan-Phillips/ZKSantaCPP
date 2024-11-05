@@ -13,6 +13,7 @@ add_executable(SecretSanta
     src/EnvReader.cpp
     src/SecretSanta.cpp
     src/EmailSender.cpp
+    src/ReadCSV.cpp
 )
 
 target_link_libraries(SecretSanta OpenSSL::SSL nlohmann_json::nlohmann_json)
